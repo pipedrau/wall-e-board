@@ -198,10 +198,20 @@ function App() {
   }, []);
 
   async function cargarDatos() {
-    const { data: cols } = await supabase.from('columnas').select('*').order('orden');
-    const { data: tars } = await supabase.from('tarjetas').select('*').order('orden');
-    setColumnas(cols || []);
-    setTarjetas(tars || []);
+    setError('');
+    try {
+      const { data: cols, error: errCols } = await supabase.from('columnas').select('*').order('orden');
+      if (errCols) throw errCols;
+      
+      const { data: tars, error: errTars } = await supabase.from('tarjetas').select('*').order('orden');
+      if (errTars) throw errTars;
+      
+      setColumnas(cols || []);
+      setTarjetas(tars || []);
+    } catch (err) {
+      console.error('Error al cargar datos:', err);
+      setError('Error al cargar datos. Por favor verifica tu conexión e intenta de nuevo.');
+    }
   }
 
   async function cargarHistorial() {
@@ -371,6 +381,13 @@ function App() {
           <button onClick={handleLogout} className="logout-btn"><LogOut size={14} /> Cerrar</button>
         </div>
       </header>
+
+      {error && (
+        <div className="error-banner">
+          <span>{error}</span>
+          <button onClick={() => setError('')}><X size={16} /></button>
+        </div>
+      )}
 
       {showTeam && (
         <div className="sidebar">

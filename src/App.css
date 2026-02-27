@@ -882,3 +882,23 @@ body {
   color: var(--text-muted);
   padding: var(--space-4);
 }
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+}
+
+.error-banner button {
+  background: none;
+  border: none;
+  color: #991b1b;
+  cursor: pointer;
+  padding: var(--space-1);
+}
