@@ -41,13 +41,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
-  padding-bottom: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
 
 .header-left h1 {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   background: var(--gradient);
   -webkit-background-clip: text;
@@ -56,9 +56,9 @@ body {
 }
 
 .header-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .header-right {
@@ -95,19 +95,20 @@ body {
 /* Board */
 .board {
   display: flex;
-  gap: 24px;
+  gap: 16px;
   overflow-x: auto;
   padding-bottom: 24px;
+  justify-content: flex-start;
 }
 
 /* Column */
 .column {
-  flex: 0 0 320px;
+  flex: 0 0 260px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 20px;
-  max-height: calc(100vh - 160px);
+  border-radius: 16px;
+  padding: 14px;
+  max-height: calc(100vh - 140px);
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
