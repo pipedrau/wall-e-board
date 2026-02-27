@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import './App.css';
@@ -73,7 +73,8 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
 
 function Columna({ columna, tarjetas, columnas, onMove, onDelete, onEdit, onAdd }) {
   const [nueva, setNueva] = useState('');
-  const [showDesc, setShowDesc] = useState(false);
+
+  const { setNodeRef } = useSortable({ id: columna.id });
 
   const handleAdd = () => {
     if (nueva.trim()) {
@@ -83,7 +84,7 @@ function Columna({ columna, tarjetas, columnas, onMove, onDelete, onEdit, onAdd 
   };
 
   return (
-    <div className="column">
+    <div className="column" ref={setNodeRef} data-column-id={columna.id}>
       <div className="column-header">
         <h3 className="column-title">{columna.nombre}</h3>
         <span className="column-count">{tarjetas.length}</span>
@@ -125,6 +126,7 @@ function App() {
   const [columnas, setColumnas] = useState([]);
   const [tarjetas, setTarjetas] = useState([]);
   const [error, setError] = useState('');
+  const [activeId, setActiveId] = useState(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -161,14 +163,30 @@ function App() {
     await supabase.auth.signOut();
   }
 
+  function handleDragStart(event) {
+    setActiveId(event.active.id);
+  }
+
   async function handleDragEnd(event) {
     const { active, over } = event;
+    setActiveId(null);
+
     if (!over) return;
 
     const tarjetaId = active.id;
     const tarjeta = tarjetas.find(t => t.id === tarjetaId);
-    
-    // Buscar si es un drop sobre otra tarjeta
+
+    // Verificar si soltó sobre una columna
+    const columnaId = over.id;
+    const esColumna = columnas.find(c => c.id === columnaId);
+
+    if (esColumna && tarjeta.columna_id !== columnaId) {
+      await supabase.from('tarjetas').update({ columna_id: columnaId }).eq('id', tarjetaId);
+      cargarDatos();
+      return;
+    }
+
+    // Verificar si soltó sobre otra tarjeta
     const tarjetaOver = tarjetas.find(t => t.id === over.id);
     if (tarjetaOver && tarjeta.columna_id !== tarjetaOver.columna_id) {
       await supabase.from('tarjetas').update({ columna_id: tarjetaOver.columna_id }).eq('id', tarjetaId);
@@ -199,6 +217,8 @@ function App() {
     await supabase.from('tarjetas').update(datos).eq('id', tarjetaId);
     cargarDatos();
   }
+
+  const activeTarjeta = activeId ? tarjetas.find(t => t.id === activeId) : null;
 
   if (loading) return <div className="loading"><div className="spinner"></div></div>;
 
@@ -239,7 +259,12 @@ function App() {
         </div>
       </header>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext 
+        sensors={sensors} 
+        collisionDetection={closestCenter} 
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
         <div className="board">
           {columnas.map(col => (
             <Columna 
@@ -254,6 +279,13 @@ function App() {
             />
           ))}
         </div>
+        <DragOverlay>
+          {activeTarjeta ? (
+            <div className="card card-dragging">
+              <span className="card-title">{activeTarjeta.titulo}</span>
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

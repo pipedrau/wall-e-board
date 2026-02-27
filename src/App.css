@@ -157,6 +157,13 @@ body {
   cursor: grabbing;
 }
 
+.card-dragging {
+  opacity: 0.9;
+  transform: rotate(3deg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border-color: var(--accent);
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
