@@ -81,31 +81,13 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
     setEditando(false);
   };
 
-  if (editando) {
-    return (
-      <div className="card card-edit" onClick={(e) => e.stopPropagation()}>
-        <div className="card-edit-header">
-          <span className="card-edit-label">Editando tarea</span>
-        </div>
-        <input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Título" className="edit-input" />
-        <textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Descripción..." className="edit-textarea" />
-        <select value={responsable} onChange={(e) => setResponsable(e.target.value)} className="edit-select">
-          <option value="">Sin responsable</option>
-          {AGENTES.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
-        </select>
-        <div className="edit-actions">
-          <button onClick={guardar} className="btn-save">Guardar</button>
-          <button onClick={() => setEditando(false)} className="btn-cancel">Cancelar</button>
-        </div>
-      </div>
-    );
-  }
+  // No mostrar inline edit - usar modal
 
   return (
     <div className="card" ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <div className="card-header">
         <span className="card-title">{tarjeta.titulo}</span>
-        <button className="btn-edit" onClick={(e) => { e.stopPropagation(); setEditando(true); }}><Edit size={14} /></button>
+        <button className="btn-edit" onClick={(e) => { e.stopPropagation(); setEditingCard(tarjeta); }}><Edit size={14} /></button>
       </div>
       {tarjeta.descripcion && <p className="card-desc">{tarjeta.descripcion}</p>}
       {tarjeta.asignee && <span className="card-asignee">@{tarjeta.asignee}</span>}
@@ -194,6 +176,29 @@ function App() {
   const [showPlantillas, setShowPlantillas] = useState(false);
   const [notificaciones, setNotificaciones] = useState([]);
   const [editingCard, setEditingCard] = useState(null);
+  const [editTitulo, setEditTitulo] = useState('');
+  const [editDescripcion, setEditDescripcion] = useState('');
+  const [editResponsable, setEditResponsable] = useState('');
+
+  // Inicializar valores cuando se abre modal de edición
+  useEffect(() => {
+    if (editingCard) {
+      setEditTitulo(editingCard.titulo || '');
+      setEditDescripcion(editingCard.descripcion || '');
+      setEditResponsable(editingCard.asignee || '');
+    }
+  }, [editingCard]);
+
+  const handleSaveEdit = async () => {
+    if (editingCard && editTitulo.trim()) {
+      await editarTarjeta(editingCard.id, { 
+        titulo: editTitulo, 
+        descripcion: editDescripcion, 
+        asignee: editResponsable 
+      });
+      setEditingCard(null);
+    }
+  };
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -555,6 +560,55 @@ function App() {
                     <span className="plantilla-desc">{plantilla.descripcion}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edición de Tarjeta */}
+      {editingCard && (
+        <div className="modal-overlay" onClick={() => setEditingCard(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2><Edit size={20} /> Editar Tarea</h2>
+              <button className="modal-close" onClick={() => setEditingCard(null)}><XCircle size={20} /></button>
+            </div>
+            <div className="modal-content">
+              <div className="form-group">
+                <label>Título</label>
+                <input 
+                  type="text" 
+                  value={editTitulo} 
+                  onChange={(e) => setEditTitulo(e.target.value)}
+                  className="edit-input"
+                  placeholder="Título de la tarea"
+                />
+              </div>
+              <div className="form-group">
+                <label>Descripción</label>
+                <textarea 
+                  value={editDescripcion} 
+                  onChange={(e) => setEditDescripcion(e.target.value)}
+                  className="edit-textarea"
+                  placeholder="Descripción de la tarea..."
+                  rows={4}
+                />
+              </div>
+              <div className="form-group">
+                <label>Responsable</label>
+                <select 
+                  value={editResponsable} 
+                  onChange={(e) => setEditResponsable(e.target.value)}
+                  className="edit-select"
+                >
+                  <option value="">Sin responsable</option>
+                  {AGENTES.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                </select>
+              </div>
+              <div className="form-actions">
+                <button onClick={handleSaveEdit} className="btn btn-primary">Guardar Cambios</button>
+                <button onClick={() => setEditingCard(null)} className="btn btn-secondary">Cancelar</button>
               </div>
             </div>
           </div>
