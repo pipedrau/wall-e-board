@@ -17,6 +17,21 @@ const EMOJIS_COLUMNAS = {
   'b7ab27b9-de83-4d6c-9ee7-95b8a4ba4dc5': '✅'  // Hecho
 };
 
+function formatRelativeTime(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'ahora';
+  if (diffMins < 60) return `hace ${diffMins}m`;
+  if (diffHours < 24) return `hace ${diffHours}h`;
+  if (diffDays < 7) return `hace ${diffDays}d`;
+  return date.toLocaleDateString('es');
+}
+
 function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: tarjeta.id });
   
@@ -61,6 +76,7 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
       </div>
       {tarjeta.descripcion && <p className="card-desc">{tarjeta.descripcion}</p>}
       {tarjeta.asignee && <span className="card-asignee">@{tarjeta.asignee}</span>}
+      <span className="card-date">{formatRelativeTime(tarjeta.created_at)}</span>
       <div className="card-footer">
         <select 
           onChange={(e) => { e.stopPropagation(); onMove(tarjeta.id, e.target.value); }}
