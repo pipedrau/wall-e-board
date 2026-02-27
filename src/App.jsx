@@ -11,6 +11,11 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const AGENTES = ['Wall-E', 'Agente 1', 'Agente 2', 'Agente 3'];
+const EMOJIS_COLUMNAS = {
+  '7edf4d44-3b09-4e2c-b942-b01b94851da6': '📋', // Por hacer
+  '228b53c8-97d8-4a71-8145-b76c8079010c': '🔄', // En progreso
+  'b7ab27b9-de83-4d6c-9ee7-95b8a4ba4dc5': '✅'  // Hecho
+};
 
 function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: tarjeta.id });
@@ -86,7 +91,7 @@ function Columna({ columna, tarjetas, columnas, onMove, onDelete, onEdit, onAdd 
   return (
     <div className="column" ref={setNodeRef} data-column-id={columna.id}>
       <div className="column-header">
-        <h3 className="column-title">{columna.nombre}</h3>
+        <h3 className="column-title">{EMOJIS_COLUMNAS[columna.id] || ''} {columna.nombre}</h3>
         <span className="column-count">{tarjetas.length}</span>
       </div>
       
