@@ -116,7 +116,7 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
         >
           {columnas.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
         </select>
-        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); if (confirm('¿Eliminar esta tarea?')) onDelete(tarjeta.id); }}><TrashIcon size={16} /></button>
+        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); if (confirm('¿Eliminar esta tarea?')) onDelete(tarjeta.id); }}>🗑️</button>
       </div>
     </div>
   );
