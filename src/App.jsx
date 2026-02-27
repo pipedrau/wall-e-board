@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle } from 'lucide-react';
+import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle, Users } from 'lucide-react';
 import './App.css';
 
 const supabaseUrl = 'https://tvzrqvtgcgmyficytpud.supabase.co';
@@ -11,7 +11,12 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const AGENTES = ['Wall-E', 'Agente 1', 'Agente 2', 'Agente 3'];
+const AGENTES = [
+  { id: 'Wall-E', nombre: 'Wall-E', rol: 'Asistente', emoji: '🤖' },
+  { id: 'Agente 1', nombre: 'Agente 1', rol: 'Por asignar', emoji: '👤' },
+  { id: 'Agente 2', nombre: 'Agente 2', rol: 'Por asignar', emoji: '👤' },
+  { id: 'Agente 3', nombre: 'Agente 3', rol: 'Por asignar', emoji: '👤' }
+];
 const ICONOS_COLUMNAS = {
   '7edf4d44-3b09-4e2c-b942-b01b94851da6': ClipboardList, // Por hacer
   '228b53c8-97d8-4a71-8145-b76c8079010c': RefreshCw, // En progreso
@@ -157,6 +162,7 @@ function App() {
   const [error, setError] = useState('');
   const [activeId, setActiveId] = useState(null);
   const [showStats, setShowStats] = useState(false);
+  const [showTeam, setShowTeam] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -324,9 +330,34 @@ function App() {
         <div className="header-right">
           <button onClick={() => setShowStats(true)} className="stats-btn"><BarChart2 size={16} /> Estadísticas</button>
           <span className="user-badge"><User size={14} /> {session.user.email}</span>
+          <button onClick={() => setShowTeam(!showTeam)} className="team-btn"><Users size={14} /> Equipo</button>
           <button onClick={handleLogout} className="logout-btn"><LogOut size={14} /> Cerrar</button>
         </div>
       </header>
+
+      {showTeam && (
+        <div className="sidebar">
+          <div className="sidebar-header">
+            <h3>Equipo</h3>
+            <button onClick={() => setShowTeam(false)} className="sidebar-close"><XCircle size={18} /></button>
+          </div>
+          <div className="team-list">
+            {AGENTES.map(agente => {
+              const tareasCount = tarjetas.filter(t => t.asignee === agente.id && t.columna_id !== 'b7ab27b9-de83-4d6c-9ee7-95b8a4ba4dc5').length;
+              return (
+                <div key={agente.id} className={`team-member ${agente.id === 'Wall-E' ? 'active' : ''}`}>
+                  <div className="member-avatar">{agente.emoji}</div>
+                  <div className="member-info">
+                    <span className="member-name">{agente.nombre}</span>
+                    <span className="member-rol">{agente.rol}</span>
+                  </div>
+                  {tareasCount > 0 && <span className="member-tasks">{tareasCount}</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <DndContext 
         sensors={sensors} 
