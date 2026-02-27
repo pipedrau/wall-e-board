@@ -902,3 +902,32 @@ body {
   cursor: pointer;
   padding: var(--space-1);
 }
+
+.notificaciones {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.notificacion {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-size: var(--text-sm);
+  animation: slideIn 0.3s ease;
+}
+
+.notificacion-insert { border-left: 4px solid #22c55e; }
+.notificacion-update { border-left: 4px solid #3b82f6; }
+.notificacion-delete { border-left: 4px solid #ef4444; }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

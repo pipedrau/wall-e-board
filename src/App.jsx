@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { RealtimeChannel } from '@supabase/supabase-js';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -179,6 +180,7 @@ function App() {
   const [showTeam, setShowTeam] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [historial, setHistorial] = useState([]);
+  const [notificaciones, setNotificaciones] = useState([]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -194,7 +196,33 @@ function App() {
       if (session) cargarDatos();
     });
 
-    return () => subscription.unsubscribe();
+    // Suscripción a Supabase Realtime para notificaciones
+    const canal = supabase
+      .channel('tablero-cambios')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tarjetas' }, (payload) => {
+        console.log('Cambio en tarjetas:', payload);
+        let mensaje = '';
+        if (payload.eventType === 'INSERT') {
+          mensaje = `Nueva tarea: ${payload.new.titulo}`;
+        } else if (payload.eventType === 'UPDATE') {
+          mensaje = `Tarea actualizada: ${payload.new.titulo}`;
+        } else if (payload.eventType === 'DELETE') {
+          mensaje = `Tarea eliminada`;
+        }
+        if (mensaje) {
+          setNotificaciones(prev => [...prev, { id: Date.now(), mensaje, tipo: payload.eventType }]);
+          setTimeout(() => {
+            setNotificaciones(prev => prev.slice(1));
+          }, 5000);
+        }
+        cargarDatos();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+      supabase.removeChannel(canal);
+    };
   }, []);
 
   async function cargarDatos() {
@@ -388,6 +416,14 @@ function App() {
           <button onClick={() => setError('')}><X size={16} /></button>
         </div>
       )}
+
+      <div className="notificaciones">
+        {notificaciones.map(n => (
+          <div key={n.id} className={`notificacion notificacion-${n.tipo.toLowerCase()}`}>
+            {n.mensaje}
+          </div>
+        ))}
+      </div>
 
       {showTeam && (
         <div className="sidebar">
