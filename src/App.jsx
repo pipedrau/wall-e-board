@@ -62,7 +62,7 @@ function formatRelativeTime(dateString) {
   return date.toLocaleDateString('es');
 }
 
-function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
+function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit, onOpenEdit }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: tarjeta.id });
   
   const style = {
@@ -71,17 +71,7 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const [editando, setEditando] = useState(false);
-  const [titulo, setTitulo] = useState(tarjeta.titulo);
-  const [descripcion, setDescripcion] = useState(tarjeta.descripcion || '');
-  const [responsable, setResponsable] = useState(tarjeta.asignee || '');
-
-  const guardar = () => {
-    onEdit(tarjeta.id, { titulo, descripcion, asignee: responsable });
-    setEditando(false);
-  };
-
-  // No mostrar inline edit - usar modal
+  // El modal de edición se maneja desde el componente padre
 
   return (
     <div className="card" ref={setNodeRef} style={style} {...attributes} {...listeners}>
@@ -92,10 +82,7 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
           onClick={(e) => { 
             e.stopPropagation(); 
             e.preventDefault();
-            setEditingCard(tarjeta.id);
-            setEditTitulo(tarjeta.titulo);
-            setEditDescripcion(tarjeta.descripcion || '');
-            setEditResponsable(tarjeta.asignee || '');
+            if (onOpenEdit) onOpenEdit(tarjeta);
           }}
         ><Edit size={14} /></button>
       </div>
@@ -148,6 +135,12 @@ function Columna({ columna, tarjetas, columnas, onMove, onDelete, onEdit, onAdd 
               onMove={onMove}
               onDelete={onDelete}
               onEdit={onEdit}
+              onOpenEdit={(t) => {
+                setEditingCardId(t.id);
+                setEditTitulo(t.titulo);
+                setEditDescripcion(t.descripcion || '');
+                setEditResponsable(t.asignee || '');
+              }}
             />
           ))}
         </div>
