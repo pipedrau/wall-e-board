@@ -30,7 +30,10 @@ body {
 .app {
   min-height: 100vh;
   padding: 24px;
-  background: var(--bg);
+  background: 
+    radial-gradient(ellipse at 10% 10%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 90%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+    var(--bg);
 }
 
 /* Header */
@@ -50,6 +53,12 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.header-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
 }
 
 .header-right {
@@ -238,28 +247,34 @@ body {
 .card-select {
   flex: 1;
   background: var(--bg-card);
-  color: var(--text-muted);
+  color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 8px;
+  border-radius: 8px;
+  padding: 8px 10px;
   font-size: 12px;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-select:hover {
+  border-color: var(--accent);
 }
 
 .card-select:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 .btn-delete {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-muted);
-  border-radius: 6px;
-  width: 32px;
-  height: 32px;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -270,6 +285,7 @@ body {
   background: var(--danger);
   border-color: var(--danger);
   color: white;
+  transform: scale(1.05);
 }
 
 /* Edit Card */

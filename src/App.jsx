@@ -273,6 +273,7 @@ function App() {
       <header className="header">
         <div className="header-left">
           <h1>📋 Wall-E Board</h1>
+          <p className="header-subtitle">Gestión de tareas automatizada</p>
         </div>
         <div className="header-right">
           <span className="user-badge">👤 {session.user.email}</span>
