@@ -4,7 +4,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle, Users, History } from 'lucide-react';
+import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle, Users, History, Trash2 } from 'lucide-react';
 import './App.css';
 
 const supabaseUrl = 'https://tvzrqvtgcgmyficytpud.supabase.co';
@@ -83,12 +83,12 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
 
   if (editando) {
     return (
-      <div className="card card-edit" ref={setNodeRef} style={style}>
+      <div className="card card-edit">
         <input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Título" className="edit-input" />
         <textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Descripción..." className="edit-textarea" />
         <select value={responsable} onChange={(e) => setResponsable(e.target.value)} className="edit-select">
           <option value="">Sin responsable</option>
-          {AGENTES.map(a => <option key={a} value={a}>{a}</option>)}
+          {AGENTES.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
         </select>
         <div className="edit-actions">
           <button onClick={guardar} className="btn-save">Guardar</button>
@@ -116,7 +116,7 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
         >
           {columnas.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
         </select>
-        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); onDelete(tarjeta.id); }}><X size={16} /></button>
+        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); if (confirm('¿Eliminar esta tarea?')) onDelete(tarjeta.id); }}><Trash2 size={16} /></button>
       </div>
     </div>
   );
