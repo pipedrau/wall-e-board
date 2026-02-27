@@ -474,7 +474,7 @@ function App() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="board">
+        <div className="board" style={{ marginLeft: showTeam ? '300px' : '0', transition: 'margin-left 0.2s ease' }}>
           {columnas.map(col => (
             <Columna 
               key={col.id} 

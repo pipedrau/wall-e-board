@@ -590,15 +590,21 @@ body {
 /* Sidebar */
 .sidebar {
   position: fixed;
-  right: 0;
+  left: 0;
   top: 0;
   width: 300px;
   height: 100vh;
   background: var(--bg-secondary);
-  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
   z-index: 100;
   padding: var(--space-5);
-  animation: slideIn 0.2s ease;
+  animation: slideInLeft 0.2s ease;
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
 }
 
 @keyframes slideIn {
