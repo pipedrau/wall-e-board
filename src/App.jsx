@@ -4,7 +4,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle, Users, History, Trash2 } from 'lucide-react';
+import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle, Users, History, Trash2, Moon, Sun } from 'lucide-react';
 import './App.css';
 
 const supabaseUrl = 'https://tvzrqvtgcgmyficytpud.supabase.co';
@@ -179,6 +179,18 @@ function App() {
   const [editTitulo, setEditTitulo] = useState('');
   const [editDescripcion, setEditDescripcion] = useState('');
   const [editResponsable, setEditResponsable] = useState('');
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('wall-e-board-dark-mode');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // Aplicar tema al documento
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    localStorage.setItem('wall-e-board-dark-mode', JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  const toggleDarkMode = () => setDarkMode(!darkMode);
 
   // Inicializar valores cuando se abre modal de edición
   useEffect(() => {
@@ -429,6 +441,9 @@ function App() {
           <p className="header-subtitle">Gestión de tareas automatizada</p>
         </div>
         <div className="header-right">
+          <button onClick={toggleDarkMode} className="theme-toggle" title={darkMode ? 'Modo Claro' : 'Modo Oscuro'}>
+            {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
           <button onClick={() => setShowPlantillas(true)} className="stats-btn"><Plus size={16} /> Plantillas</button>
           <button onClick={() => setShowStats(true)} className="stats-btn"><BarChart2 size={16} /> Estadísticas</button>
           <button onClick={handleShowHistory} className="stats-btn"><History size={16} /> Historial</button>
