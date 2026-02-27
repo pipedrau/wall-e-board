@@ -407,10 +407,12 @@ body {
   align-items: center;
   justify-content: center;
   transition: all var(--transition-fast);
+  font-size: 16px;
+  line-height: 1;
 }
 
 .btn-delete:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.15);
   border-color: var(--danger);
   color: var(--danger);
 }
