@@ -5,6 +5,13 @@ export default defineConfig({
   plugins: [react()],
   base: '/wall-e-board/',
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'lucide': ['lucide-react']
+        }
+      }
+    }
   }
 })
