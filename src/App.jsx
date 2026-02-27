@@ -4,7 +4,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle, Users, History, Trash2 } from 'lucide-react';
+import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle, Users, History, Trash2 as TrashIcon } from 'lucide-react';
 import './App.css';
 
 const supabaseUrl = 'https://tvzrqvtgcgmyficytpud.supabase.co';
@@ -116,7 +116,7 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
         >
           {columnas.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
         </select>
-        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); if (confirm('¿Eliminar esta tarea?')) onDelete(tarjeta.id); }}><Trash2 size={16} /></button>
+        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); if (confirm('¿Eliminar esta tarea?')) onDelete(tarjeta.id); }}><TrashIcon size={16} /></button>
       </div>
     </div>
   );
