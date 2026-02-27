@@ -38,6 +38,15 @@ const ICONOS_COLUMNAS = {
   'b7ab27b9-de83-4d6c-9ee7-95b8a4ba4dc5': CheckCircle  // Hecho
 };
 
+const PLANTILLAS = [
+  { id: 'daily', nombre: 'Daily Standup', descripcion: 'Reunión diaria del equipo', icono: '☀️' },
+  { id: 'sprint', nombre: 'Sprint Planning', descripcion: 'Planificación del sprint', icono: '🏃' },
+  { id: 'review', nombre: 'Code Review', descripcion: 'Revisión de código', icono: '👀' },
+  { id: 'retro', nombre: 'Sprint Retro', descripcion: 'Retrospectiva del sprint', icono: '🔄' },
+  { id: 'bug', nombre: 'Reportar Bug', descripcion: 'Documentar un bug encontrado', icono: '🐛' },
+  { id: 'feature', nombre: 'Nueva Feature', descripcion: 'Implementar nueva funcionalidad', icono: '✨' }
+];
+
 function formatRelativeTime(dateString) {
   const date = new Date(dateString);
   const now = new Date();
@@ -179,7 +188,7 @@ function App() {
   const [showStats, setShowStats] = useState(false);
   const [showTeam, setShowTeam] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [historial, setHistorial] = useState([]);
+  const [showPlantillas, setShowPlantillas] = useState(false);
   const [notificaciones, setNotificaciones] = useState([]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
@@ -294,15 +303,24 @@ function App() {
     }
   }
 
-  async function agregarTarjeta(columnaId, titulo) {
+  async function agregarTarjeta(columnaId, titulo, descripcion = '') {
     const columna = columnas.find(c => c.id === columnaId);
     await supabase.from('tarjetas').insert({
       columna_id: columnaId,
       titulo,
+      descripcion,
       orden: tarjetas.filter(t => t.columna_id === columnaId).length
     });
     await registrarHistorial('crear', `Tarea "${titulo}" creada en ${columna?.nombre || 'unknown'}`, null);
     cargarDatos();
+  }
+
+  function crearDesdePlantilla(plantilla) {
+    const columnaPorHacer = columnas.find(c => c.nombre === 'Por hacer');
+    if (columnaPorHacer) {
+      agregarTarjeta(columnaPorHacer.id, plantilla.nombre, plantilla.descripcion);
+      setShowPlantillas(false);
+    }
   }
 
   async function moverTarjeta(tarjetaId, nuevaColumnaId) {
@@ -402,6 +420,7 @@ function App() {
           <p className="header-subtitle">Gestión de tareas automatizada</p>
         </div>
         <div className="header-right">
+          <button onClick={() => setShowPlantillas(true)} className="stats-btn"><Plus size={16} /> Plantillas</button>
           <button onClick={() => setShowStats(true)} className="stats-btn"><BarChart2 size={16} /> Estadísticas</button>
           <button onClick={handleShowHistory} className="stats-btn"><History size={16} /> Historial</button>
           <span className="user-badge"><User size={14} /> {session.user.email}</span>
@@ -507,6 +526,29 @@ function App() {
                   <div key={nombre} className="stat-column">
                     <span className="stat-col-name">{nombre}</span>
                     <span className="stat-col-count">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Plantillas */}
+      {showPlantillas && (
+        <div className="modal-overlay" onClick={() => setShowPlantillas(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2><Plus size={20} /> Plantillas de Tareas</h2>
+              <button className="modal-close" onClick={() => setShowPlantillas(false)}><XCircle size={20} /></button>
+            </div>
+            <div className="modal-content">
+              <div className="plantillas-grid">
+                {PLANTILLAS.map(plantilla => (
+                  <div key={plantilla.id} className="plantilla-card" onClick={() => crearDesdePlantilla(plantilla)}>
+                    <span className="plantilla-icono">{plantilla.icono}</span>
+                    <span className="plantilla-nombre">{plantilla.nombre}</span>
+                    <span className="plantilla-desc">{plantilla.descripcion}</span>
                   </div>
                 ))}
               </div>
