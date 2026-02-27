@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User } from 'lucide-react';
 import './App.css';
 
 const supabaseUrl = 'https://tvzrqvtgcgmyficytpud.supabase.co';
@@ -11,10 +12,10 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const AGENTES = ['Wall-E', 'Agente 1', 'Agente 2', 'Agente 3'];
-const EMOJIS_COLUMNAS = {
-  '7edf4d44-3b09-4e2c-b942-b01b94851da6': '📋', // Por hacer
-  '228b53c8-97d8-4a71-8145-b76c8079010c': '🔄', // En progreso
-  'b7ab27b9-de83-4d6c-9ee7-95b8a4ba4dc5': '✅'  // Hecho
+const ICONOS_COLUMNAS = {
+  '7edf4d44-3b09-4e2c-b942-b01b94851da6': ClipboardList, // Por hacer
+  '228b53c8-97d8-4a71-8145-b76c8079010c': RefreshCw, // En progreso
+  'b7ab27b9-de83-4d6c-9ee7-95b8a4ba4dc5': CheckCircle  // Hecho
 };
 
 function formatRelativeTime(dateString) {
@@ -72,7 +73,7 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
     <div className="card" ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <div className="card-header">
         <span className="card-title">{tarjeta.titulo}</span>
-        <button className="btn-edit" onClick={(e) => { e.stopPropagation(); setEditando(true); }}>✎</button>
+        <button className="btn-edit" onClick={(e) => { e.stopPropagation(); setEditando(true); }}><Edit size={14} /></button>
       </div>
       {tarjeta.descripcion && <p className="card-desc">{tarjeta.descripcion}</p>}
       {tarjeta.asignee && <span className="card-asignee">@{tarjeta.asignee}</span>}
@@ -86,7 +87,7 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
         >
           {columnas.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
         </select>
-        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); onDelete(tarjeta.id); }}>✕</button>
+        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); onDelete(tarjeta.id); }}><X size={16} /></button>
       </div>
     </div>
   );
@@ -104,10 +105,12 @@ function Columna({ columna, tarjetas, columnas, onMove, onDelete, onEdit, onAdd 
     }
   };
 
+  const Icono = ICONOS_COLUMNAS[columna.id];
+
   return (
     <div className="column" ref={setNodeRef} data-column-id={columna.id}>
       <div className="column-header">
-        <h3 className="column-title">{EMOJIS_COLUMNAS[columna.id] || ''} {columna.nombre}</h3>
+        <h3 className="column-title"><span className="column-icon">{Icono && <Icono size={16} />}</span> {columna.nombre}</h3>
         <span className="column-count">{tarjetas.length}</span>
       </div>
       
@@ -134,6 +137,11 @@ function Columna({ columna, tarjetas, columnas, onMove, onDelete, onEdit, onAdd 
           onChange={(e) => setNueva(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
         />
+        {nueva.trim() && (
+          <button className="add-card-btn" onClick={handleAdd}>
+            <Plus size={16} />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -253,7 +261,7 @@ function App() {
             <p>Un tablero Kanban colaborativo donde puedes asignar tareas a ti mismo o a tus agentes.</p>
           </div>
           <div className="login-box">
-            <div className="login-icon">📋</div>
+            <div className="login-icon"><ClipboardList size={48} /></div>
             <h1>Wall-E Board</h1>
             <p>Inicia sesión para continuar</p>
             <form onSubmit={handleLogin}>
@@ -272,12 +280,12 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="header-left">
-          <h1>📋 Wall-E Board</h1>
+          <h1><ClipboardList size={24} /> Wall-E Board</h1>
           <p className="header-subtitle">Gestión de tareas automatizada</p>
         </div>
         <div className="header-right">
-          <span className="user-badge">👤 {session.user.email}</span>
-          <button onClick={handleLogout} className="logout-btn">Cerrar</button>
+          <span className="user-badge"><User size={14} /> {session.user.email}</span>
+          <button onClick={handleLogout} className="logout-btn"><LogOut size={14} /> Cerrar</button>
         </div>
       </header>
 
