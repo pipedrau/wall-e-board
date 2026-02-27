@@ -83,7 +83,10 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
 
   if (editando) {
     return (
-      <div className="card card-edit">
+      <div className="card card-edit" onClick={(e) => e.stopPropagation()}>
+        <div className="card-edit-header">
+          <span className="card-edit-label">Editando tarea</span>
+        </div>
         <input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Título" className="edit-input" />
         <textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Descripción..." className="edit-textarea" />
         <select value={responsable} onChange={(e) => setResponsable(e.target.value)} className="edit-select">
@@ -190,6 +193,7 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showPlantillas, setShowPlantillas] = useState(false);
   const [notificaciones, setNotificaciones] = useState([]);
+  const [editingCard, setEditingCard] = useState(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
