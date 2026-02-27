@@ -207,6 +207,10 @@ function App() {
       <div className="login-page">
         <div className="login-bg"></div>
         <div className="login-container">
+          <div className="login-side">
+            <h2>Gestiona tu trabajo con Wall-E</h2>
+            <p>Un tablero Kanban colaborativo donde puedes asignar tareas a ti mismo o a tus agentes.</p>
+          </div>
           <div className="login-box">
             <div className="login-icon">📋</div>
             <h1>Wall-E Board</h1>

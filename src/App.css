@@ -357,6 +357,7 @@ body {
   justify-content: center;
   position: relative;
   overflow: hidden;
+  padding: 20px;
 }
 
 .login-bg {
@@ -372,7 +373,6 @@ body {
   z-index: 1;
   width: 100%;
   max-width: 400px;
-  padding: 20px;
 }
 
 .login-box {
@@ -450,6 +450,46 @@ body {
   padding: 12px;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 8px;
+}
+
+/* Desktop login - side by side */
+@media (min-width: 900px) {
+  .login-page {
+    justify-content: center;
+  }
+  
+  .login-container {
+    display: flex;
+    max-width: 800px;
+    gap: 60px;
+    align-items: center;
+  }
+  
+  .login-box {
+    flex: 1;
+    padding: 48px;
+  }
+  
+  .login-side {
+    flex: 1;
+    text-align: left;
+  }
+  
+  .login-side h2 {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .login-side p {
+    font-size: 18px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
 }
 
 /* Loading */
