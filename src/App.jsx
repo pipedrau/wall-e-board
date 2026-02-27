@@ -1,24 +1,53 @@
 import { useState, useEffect } from 'react';
-import { supabase } from './supabase';
+import { createClient } from '@supabase/supabase-js';
 import './App.css';
 
+const supabaseUrl = 'https://tvzrqvtgcgmyficytpud.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2enJxdnRnY2dteWZpY3l0cHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNTMyNzIsImV4cCI6MjA4NzcyOTI3Mn0.-8eJzWPrYovAOWS_KVyE2ercGyaibofZtzq_W_TSoyc';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 function App() {
+  const [session, setSession] = useState(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(true);
   const [columnas, setColumnas] = useState([]);
   const [tarjetas, setTarjetas] = useState([]);
   const [nuevaTarjeta, setNuevaTarjeta] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    cargarDatos();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) cargarDatos();
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) cargarDatos();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   async function cargarDatos() {
-    setLoading(true);
     const { data: cols } = await supabase.from('columnas').select('*').order('orden');
     const { data: tars } = await supabase.from('tarjetas').select('*').order('orden');
     setColumnas(cols || []);
     setTarjetas(tars || []);
-    setLoading(false);
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setError('');
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) setError(error.message);
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
   }
 
   async function agregarTarjeta(columnaId) {
@@ -47,11 +76,43 @@ function App() {
 
   if (loading) return <div className="loading">Cargando...</div>;
 
+  if (!session) {
+    return (
+      <div className="login-container">
+        <div className="login-box">
+          <h1>🔐 Wall-E Board</h1>
+          <p>Inicia sesión para continuar</p>
+          <form onSubmit={handleLogin}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            {error && <p className="error">{error}</p>}
+            <button type="submit">Iniciar sesión</button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <header className="header">
         <h1>📋 Wall-E Board</h1>
-        <span className="badge">Pipe + Wall-E</span>
+        <div className="header-right">
+          <span className="user-email">{session.user.email}</span>
+          <button onClick={handleLogout} className="logout-btn">Cerrar sesión</button>
+        </div>
       </header>
 
       <div className="board">
@@ -90,18 +151,6 @@ function App() {
             </div>
           </div>
         ))}
-
-        {columnas.length === 0 && (
-          <div className="empty">
-            <p>No hay columnas. Crealas en Supabase:</p>
-            <pre>{`
-INSERT INTO columnas (nombre, orden) VALUES 
-  ('Por hacer', 1),
-  ('En progreso', 2),
-  ('Hecho', 3);
-            `}</pre>
-          </div>
-        )}
       </div>
     </div>
   );
