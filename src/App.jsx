@@ -87,7 +87,17 @@ function SortableCard({ tarjeta, columnas, onMove, onDelete, onEdit }) {
     <div className="card" ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <div className="card-header">
         <span className="card-title">{tarjeta.titulo}</span>
-        <button className="btn-edit" onClick={(e) => { e.stopPropagation(); setEditingCard(tarjeta); }}><Edit size={14} /></button>
+        <button 
+          className="btn-edit" 
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            e.preventDefault();
+            setEditingCard(tarjeta.id);
+            setEditTitulo(tarjeta.titulo);
+            setEditDescripcion(tarjeta.descripcion || '');
+            setEditResponsable(tarjeta.asignee || '');
+          }}
+        ><Edit size={14} /></button>
       </div>
       {tarjeta.descripcion && <p className="card-desc">{tarjeta.descripcion}</p>}
       {tarjeta.asignee && <span className="card-asignee">@{tarjeta.asignee}</span>}
@@ -175,7 +185,7 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showPlantillas, setShowPlantillas] = useState(false);
   const [notificaciones, setNotificaciones] = useState([]);
-  const [editingCard, setEditingCard] = useState(null);
+  const [editingCardId, setEditingCardId] = useState(null);
   const [editTitulo, setEditTitulo] = useState('');
   const [editDescripcion, setEditDescripcion] = useState('');
   const [editResponsable, setEditResponsable] = useState('');
@@ -194,21 +204,24 @@ function App() {
 
   // Inicializar valores cuando se abre modal de edición
   useEffect(() => {
-    if (editingCard) {
-      setEditTitulo(editingCard.titulo || '');
-      setEditDescripcion(editingCard.descripcion || '');
-      setEditResponsable(editingCard.asignee || '');
+    if (editingCardId) {
+      const tarjeta = tarjetas.find(t => t.id === editingCardId);
+      if (tarjeta) {
+        setEditTitulo(tarjeta.titulo || '');
+        setEditDescripcion(tarjeta.descripcion || '');
+        setEditResponsable(tarjeta.asignee || '');
+      }
     }
-  }, [editingCard]);
+  }, [editingCardId, tarjetas]);
 
   const handleSaveEdit = async () => {
-    if (editingCard && editTitulo.trim()) {
-      await editarTarjeta(editingCard.id, { 
+    if (editingCardId && editTitulo.trim()) {
+      await editarTarjeta(editingCardId, { 
         titulo: editTitulo, 
         descripcion: editDescripcion, 
         asignee: editResponsable 
       });
-      setEditingCard(null);
+      setEditingCardId(null);
     }
   };
 
@@ -582,12 +595,12 @@ function App() {
       )}
 
       {/* Modal de Edición de Tarjeta */}
-      {editingCard && (
-        <div className="modal-overlay" onClick={() => setEditingCard(null)}>
+      {editingCardId && (
+        <div className="modal-overlay" onClick={() => setEditingCardId(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2><Edit size={20} /> Editar Tarea</h2>
-              <button className="modal-close" onClick={() => setEditingCard(null)}><XCircle size={20} /></button>
+              <button className="modal-close" onClick={() => setEditingCardId(null)}><XCircle size={20} /></button>
             </div>
             <div className="modal-content">
               <div className="form-group">
