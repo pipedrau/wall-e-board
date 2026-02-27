@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot } from 'lucide-react';
+import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle } from 'lucide-react';
 import './App.css';
 
 const supabaseUrl = 'https://tvzrqvtgcgmyficytpud.supabase.co';
@@ -156,6 +156,7 @@ function App() {
   const [tarjetas, setTarjetas] = useState([]);
   const [error, setError] = useState('');
   const [activeId, setActiveId] = useState(null);
+  const [showStats, setShowStats] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -249,6 +250,42 @@ function App() {
 
   const activeTarjeta = activeId ? tarjetas.find(t => t.id === activeId) : null;
 
+  // Calcular estadísticas
+  const calcularEstadisticas = () => {
+    const totalTareas = tarjetas.length;
+    const tareasPorColumna = {};
+    columnas.forEach(col => {
+      tareasPorColumna[col.nombre] = tarjetas.filter(t => t.columna_id === col.id).length;
+    });
+    
+    // Tareas completadas esta semana
+    const haceUnaSemana = new Date();
+    haceUnaSemana.setDate(haceUnaSemana.getDate() - 7);
+    const columnaHechoId = columnas.find(c => c.nombre === 'Hecho')?.id;
+    const tareasEstaSemana = tarjetas.filter(t => 
+      t.columna_id === columnaHechoId && 
+      new Date(t.created_at) >= haceUnaSemana
+    ).length;
+
+    // Promedio de tiempo por tarea (cuando está en "Hecho")
+    let tiempoTotal = 0;
+    let count = 0;
+    tarjetas.filter(t => t.columna_id === columnaHechoId).forEach(t => {
+      const fechaCreacion = new Date(t.created_at);
+      // Usamos la fecha de creación como proxy (en una versión real tendríamos updated_at)
+      const dias = Math.floor((new Date() - fechaCreacion) / 86400000);
+      if (dias >= 0) {
+        tiempoTotal += dias;
+        count++;
+      }
+    });
+    const promedioDias = count > 0 ? (tiempoTotal / count).toFixed(1) : 0;
+
+    return { totalTareas, tareasPorColumna, tareasEstaSemana, promedioDias };
+  };
+
+  const stats = calcularEstadisticas();
+
   if (loading) return <div className="loading"><div className="spinner"></div></div>;
 
   if (!session) {
@@ -285,6 +322,7 @@ function App() {
           <p className="header-subtitle">Gestión de tareas automatizada</p>
         </div>
         <div className="header-right">
+          <button onClick={() => setShowStats(true)} className="stats-btn"><BarChart2 size={16} /> Estadísticas</button>
           <span className="user-badge"><User size={14} /> {session.user.email}</span>
           <button onClick={handleLogout} className="logout-btn"><LogOut size={14} /> Cerrar</button>
         </div>
@@ -318,6 +356,43 @@ function App() {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      {/* Modal de Estadísticas */}
+      {showStats && (
+        <div className="modal-overlay" onClick={() => setShowStats(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2><BarChart2 size={20} /> Estadísticas del Board</h2>
+              <button className="modal-close" onClick={() => setShowStats(false)}><XCircle size={20} /></button>
+            </div>
+            <div className="modal-content">
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <span className="stat-number">{stats.totalTareas}</span>
+                  <span className="stat-label">Total de Tareas</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-number">{stats.tareasEstaSemana}</span>
+                  <span className="stat-label">Completadas Esta Semana</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-number">{stats.promedioDias}d</span>
+                  <span className="stat-label">Promedio por Tarea</span>
+                </div>
+              </div>
+              <h3>Tareas por Columna</h3>
+              <div className="stats-columns">
+                {Object.entries(stats.tareasPorColumna).map(([nombre, count]) => (
+                  <div key={nombre} className="stat-column">
+                    <span className="stat-col-name">{nombre}</span>
+                    <span className="stat-col-count">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
