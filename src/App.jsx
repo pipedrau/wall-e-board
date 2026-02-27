@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User } from 'lucide-react';
+import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot } from 'lucide-react';
 import './App.css';
 
 const supabaseUrl = 'https://tvzrqvtgcgmyficytpud.supabase.co';
@@ -255,15 +255,16 @@ function App() {
     return (
       <div className="login-page">
         <div className="login-bg"></div>
-        <div className="login-container">
-          <div className="login-side">
-            <h2>Gestiona tu trabajo con Wall-E</h2>
-            <p>Un tablero Kanban colaborativo donde puedes asignar tareas a ti mismo o a tus agentes.</p>
+        <div className="login-center">
+          <div className="login-hero">
+            <div className="login-logo">
+              <Bot size={80} />
+            </div>
+            <h1>Wall-E Operator</h1>
+            <p>Tu asistente de gestión de tareas</p>
           </div>
           <div className="login-box">
-            <div className="login-icon"><ClipboardList size={48} /></div>
-            <h1>Wall-E Board</h1>
-            <p>Inicia sesión para continuar</p>
+            <h2>Iniciar sesión</h2>
             <form onSubmit={handleLogin}>
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
