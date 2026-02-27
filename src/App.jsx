@@ -3,13 +3,27 @@ import { createClient } from '@supabase/supabase-js';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle, Users } from 'lucide-react';
+import { ClipboardList, RefreshCw, CheckCircle, Edit, X, Plus, LogOut, User, Bot, BarChart2, XCircle, Users, History } from 'lucide-react';
 import './App.css';
 
 const supabaseUrl = 'https://tvzrqvtgcgmyficytpud.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2enJxdnRnY2dteWZpY3l0cHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNTMyNzIsImV4cCI6MjA4NzcyOTI3Mn0.-8eJzWPrYovAOWS_KVyE2ercGyaibofZtzq_W_TSoyc';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Función para registrar actividad en el historial
+async function registrarHistorial(tipo, descripcion, tarjetaId = null) {
+  try {
+    await supabase.from('historial').insert({
+      tipo,
+      descripcion,
+      tarjeta_id: tarjetaId,
+      created_at: new Date().toISOString()
+    });
+  } catch (err) {
+    console.log('Historial no disponible:', err.message);
+  }
+}
 
 const AGENTES = [
   { id: 'Wall-E', nombre: 'Wall-E', rol: 'Asistente', emoji: '🤖' },
@@ -163,6 +177,8 @@ function App() {
   const [activeId, setActiveId] = useState(null);
   const [showStats, setShowStats] = useState(false);
   const [showTeam, setShowTeam] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historial, setHistorial] = useState([]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -186,6 +202,16 @@ function App() {
     const { data: tars } = await supabase.from('tarjetas').select('*').order('orden');
     setColumnas(cols || []);
     setTarjetas(tars || []);
+  }
+
+  async function cargarHistorial() {
+    const { data } = await supabase.from('historial').select('*').order('created_at', { ascending: false }).limit(50);
+    setHistorial(data || []);
+  }
+
+  function handleShowHistory() {
+    setShowHistory(true);
+    cargarHistorial();
   }
 
   async function handleLogin(e) {
@@ -231,21 +257,31 @@ function App() {
   }
 
   async function agregarTarjeta(columnaId, titulo) {
+    const columna = columnas.find(c => c.id === columnaId);
     await supabase.from('tarjetas').insert({
       columna_id: columnaId,
       titulo,
       orden: tarjetas.filter(t => t.columna_id === columnaId).length
     });
+    await registrarHistorial('crear', `Tarea "${titulo}" creada en ${columna?.nombre || 'unknown'}`, null);
     cargarDatos();
   }
 
   async function moverTarjeta(tarjetaId, nuevaColumnaId) {
+    const tarjeta = tarjetas.find(t => t.id === tarjetaId);
+    const columnaAnterior = columnas.find(c => c.id === tarjeta.columna_id);
+    const columnaNueva = columnas.find(c => c.id === nuevaColumnaId);
     await supabase.from('tarjetas').update({ columna_id: nuevaColumnaId }).eq('id', tarjetaId);
+    await registrarHistorial('mover', `Tarea "${tarjeta?.titulo}" movida de ${columnaAnterior?.nombre} a ${columnaNueva?.nombre}`, tarjetaId);
     cargarDatos();
   }
 
   async function eliminarTarjeta(tarjetaId) {
+    const tarjeta = tarjetas.find(t => t.id === tarjetaId);
+    const confirmar = window.confirm(`¿Estás seguro de eliminar la tarea "${tarjeta?.titulo}"?`);
+    if (!confirmar) return;
     await supabase.from('tarjetas').delete().eq('id', tarjetaId);
+    await registrarHistorial('eliminar', `Tarea "${tarjeta?.titulo}" eliminada`, tarjetaId);
     cargarDatos();
   }
 
@@ -329,6 +365,7 @@ function App() {
         </div>
         <div className="header-right">
           <button onClick={() => setShowStats(true)} className="stats-btn"><BarChart2 size={16} /> Estadísticas</button>
+          <button onClick={handleShowHistory} className="stats-btn"><History size={16} /> Historial</button>
           <span className="user-badge"><User size={14} /> {session.user.email}</span>
           <button onClick={() => setShowTeam(!showTeam)} className="team-btn"><Users size={14} /> Equipo</button>
           <button onClick={handleLogout} className="logout-btn"><LogOut size={14} /> Cerrar</button>
@@ -420,6 +457,33 @@ function App() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Historial */}
+      {showHistory && (
+        <div className="modal-overlay" onClick={() => setShowHistory(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2><History size={20} /> Historial de Actividad</h2>
+              <button className="modal-close" onClick={() => setShowHistory(false)}><XCircle size={20} /></button>
+            </div>
+            <div className="modal-content">
+              {historial.length === 0 ? (
+                <p className="no-history">No hay actividad registrada aún.</p>
+              ) : (
+                <div className="history-list">
+                  {historial.map(item => (
+                    <div key={item.id} className={`history-item history-${item.tipo}`}>
+                      <span className="history-type">{item.tipo}</span>
+                      <span className="history-desc">{item.descripcion}</span>
+                      <span className="history-date">{formatRelativeTime(item.created_at)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
